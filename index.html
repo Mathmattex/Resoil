@@ -1,0 +1,167 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Crimson+Pro">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Handjet:wght@500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: url(BackgroundTile.png) repeat;
+        }
+
+        #canvas-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            #canvas-container canvas {
+                border: solid black;
+                border-width: thick;
+                margin-left: 5px;
+                padding-left: 0px;
+                margin-right: 0px;
+                -webkit-touch-callout: none; /* Disable touch callout on iOS */
+                -webkit-user-select: none; /* Disable text selection on iOS */
+                -khtml-user-select: none; /* Disable text selection for Konqueror */
+                -moz-user-select: none; /* Disable text selection for Firefox */
+                -ms-user-select: none; /* Disable text selection for Internet Explorer/Edge */
+                user-select: none; /* Disable text selection for other browsers */
+            }
+
+        #left-side {
+            flex: 1;
+            padding: 10px;
+        }
+
+        .statText {
+            resize: none;
+            width: 90%;
+            margin: 3px;
+            padding: 10px;
+            font-family: 'Handjet', cursive;
+            letter-spacing: 2px;
+            font-size: 18px;
+            background: url(StatsBackground.png);
+            background-repeat: round;
+            image-rendering: pixelated;
+            border: 6px solid;
+            margin-top: 0px;
+        }
+
+        #petalButton {
+            width: 100%;
+            margin: 5px;
+            padding: 10px;
+            height: 50px;
+            font-size: 20px;
+            background: url(PetalButton.png);
+            font-weight: bold;
+            color: white;
+            
+        }
+        #tabMenu{
+            display: flex;
+            margin:3px;
+            margin-bottom: 0px;
+        }
+        .button-container {
+            flex: 0;
+            padding: 0%;
+            margin: 5px;
+            margin-left: 50px;
+        }
+        .soil-button {
+            background: url(SoilButton.png);
+            background-repeat: repeat;
+            background-size: 16px 16px;
+            color:white;
+        }
+        .upgrade-button {
+            background: url(UpgradeButton.png);
+            background-repeat: repeat;
+            background-size: 16px 16px;
+            color:white;
+        }
+        .custom-button {
+            min-width: 144px;
+            width: auto;
+            height: calc(16px * ceil(100% / 16));
+            display: block;
+            margin: 5px;
+            padding: 5px;
+            font-size: 15px;
+            letter-spacing: 3px;
+            font-family: 'Handjet', cursive;
+            font-size: 18px;
+        }
+        .menu-button {
+            min-width: 10px;
+            font-size: 12px;
+            letter-spacing: 1px;
+            margin: 0px;
+            background: url(StatsBackground.png)
+        }
+        .tab {
+            display: none;
+            font-size: 15px;
+            letter-spacing: 2px;
+            font-family: 'Handjet', cursive;
+            font-size: 18px;
+            color: white;
+        }
+
+            .tab.active {
+                display: block;
+            }
+    </style>
+    <meta charset="utf-8" />
+    <title>Resoil</title>
+</head>
+<body>
+
+    <div id="canvas-container">
+        <div id="left-side">
+            <div id="tabMenu">
+                <button class="custom-button menu-button" id="Inventory" onclick="handleButtonClick(this.id)">Inventory</button>
+                <button class="custom-button menu-button" id="Save" onclick="handleButtonClick(this.id)">Save</button>
+            </div>
+            <div id="InventoryMenu" class="tab active">
+                <textarea rows="21" cols="20" class="statText" id="InventoryText" readonly></textarea>
+                <button class="custom-button" id="petalButton" onclick="handleButtonClick(this.id)">Activate Random Petal</button>
+            </div>
+            <div id="SaveMenu" class="tab">
+                Your save key:
+                <textarea rows="8" cols="20" class="statText" id="SaveExport" readonly></textarea>
+                Save Key To Import:
+                <textarea rows="8" cols="20" class="statText" id="SaveImport"></textarea>
+                <button class="custom-button" id="ImportButton" onclick="handleButtonClick(this.id)">Import</button>
+                <button class="custom-button" id="ClearButton" onclick="handleButtonClick(this.id)">Clear</button>
+            </div>
+            
+        </div>
+        <div>
+            <canvas id="canvas"></canvas>
+        </div>
+        <div class="button-container">
+
+            <button class="custom-button soil-button" id="button1" onclick="handleButtonClick(this.id)">Lvl 1: <br /> free</button>
+            <button class="custom-button soil-button" id="button2" onclick="handleButtonClick(this.id)">Lvl 2: <br /> 100 weeds</button>
+            <button class="custom-button soil-button" id="button3" onclick="handleButtonClick(this.id)">Lvl 3: <br /> 200 weeds <br /> 50 Grain</button>
+            <button class="custom-button soil-button" id="button4" onclick="handleButtonClick(this.id)">Lvl 4: <br /> 500 weeds <br /> 75 Grain</button>
+            <button class="custom-button soil-button" id="button5" onclick="handleButtonClick(this.id)">Lvl 5: <br /> 500 weeds <br /> 100 Grain<br /> 2 pumpkins</button>
+            <button class="custom-button soil-button" id="button6" onclick="handleButtonClick(this.id)">Lvl 6: <br /> 700 weeds <br /> 150 Grain<br /> 5 pumpkins <br /> 500 wood<br /> 500 leaves</button>
+        </div>
+        <div class="button-container">
+            <button class="custom-button upgrade-button" id="upgrade1" onclick="handleButtonClick(this.id)">Fortune(0): <br /> 300 weeds <br /> 10 grain</button>
+            <button class="custom-button upgrade-button" id="upgrade2" onclick="handleButtonClick(this.id)">Combo(0): <br /> 75 grain <br /> 1 pumpkin</button>
+            <button class="custom-button upgrade-button" id="upgrade3" onclick="handleButtonClick(this.id)">Flower Spawn(0): <br /> 100 grain</button>
+            <button class="custom-button upgrade-button" id="upgrade4" onclick="handleButtonClick(this.id)">Rock Luck(0/5): <br /> 3 pumpkins</button>
+        </div>
+    </div>
+    <script src="Resoil.js"></script>
+
+</body>
+</html>
