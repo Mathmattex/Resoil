@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <link rel="stylesheet"
@@ -67,6 +67,19 @@
             margin:3px;
             margin-bottom: 0px;
         }
+        #ToolImage {
+            width: 50%;
+            image-rendering: pixelated;
+            background: url(StatsBackground.png);
+            border: 6px solid black;
+            margin-left: 20%;
+        }
+        .toolIcon {
+            height: 50px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
         .button-container {
             flex: 0;
             padding: 0%;
@@ -97,12 +110,25 @@
             font-family: 'Handjet', cursive;
             font-size: 18px;
         }
+        .toolButton {
+            height: auto;
+            display: inline-flex;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            padding: 0px;
+            image-rendering: pixelated;
+            text-anchor: start;
+        }
         .menu-button {
             min-width: 10px;
             font-size: 12px;
             letter-spacing: 1px;
             margin: 0px;
             background: url(StatsBackground.png)
+        }
+        .description{
+            font-size: 11px;
+            display: block;
         }
         .tab {
             display: none;
@@ -111,6 +137,7 @@
             font-family: 'Handjet', cursive;
             font-size: 18px;
             color: white;
+
         }
 
             .tab.active {
@@ -118,7 +145,7 @@
             }
     </style>
     <meta charset="utf-8" />
-    <title>resoil</title>
+    <title>Resoil</title>
 </head>
 <body>
 
