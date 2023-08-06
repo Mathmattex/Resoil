@@ -21,7 +21,7 @@ var buttons = document.getElementsByClassName("custom-button");
 var statText = document.getElementById("statText");
 var IsNew = localStorage.getItem("IsNew");
 var SaveKey = 0;
-var cropCounts = [0, 0, 0, 0, 0, 0, 0, 0]
+var cropCounts = [10000, 100000, 0, 0, 0, 0, 0, 0]
 var petalCounts = [0, 0, 0, 0]
 var petalType = "None";
 var petalUses = 0;
@@ -30,6 +30,9 @@ var combo = 0;
 var flowerChance = 0;
 var cells = []
 var rockTier = 0;
+var ToolActive = "None";
+var ToolDurability = -1;
+var ToolMaxDurability = -1;
 console.log(IsNew);
 if (IsNew == null) {
     spritesheet.onload = function () {
@@ -77,6 +80,7 @@ function load() {
     flowerChance = JSON.parse(localStorage.getItem("flowerChance"));
     cells = JSON.parse(localStorage.getItem("cells"));
     rockTier = JSON.parse(localStorage.getItem("rockTier"));
+    ToolActive = JSON.parse(localStorage.getItem("ToolActive"));
 }
 var save = function () {
     console.log("saved!")
@@ -90,6 +94,7 @@ var save = function () {
     localStorage.setItem("flowerChance", JSON.stringify(flowerChance));
     localStorage.setItem("cells", JSON.stringify(cells));
     localStorage.setItem("rockTier", JSON.stringify(rockTier));
+    localStorage.setItem("ToolActive", JSON.stringify(ToolActive));
 }
 const RockDropPools = [["moss", "wheat", "stone"], ["moss", "wheat", "stone"], ["moss", "wheat", "stone", "pumpkin"], ["moss", "wheat", "stone", "pumpkin"], ["moss", "wheat", "stone", "pumpkin", "apple"], ["moss", "wheat", "stone", "pumpkin", "apple"]];
 const RockDropWeights = [[4, 1, 1], [4, 4, 1], [4, 6, 1, 1], [2, 6, 0.5, 2.5], [2, 6, 0.5, 2.5, 1], [4, 4, 1, 4, 4]];
@@ -181,6 +186,31 @@ var pick = function (type, fromCombo, x, y) {
         
         return "dirt";
     }
+    else if (type == "jack-o-lantern") {
+        let neighborsX = [0, 0, -1, 1]
+        let neighborsY = [1, -1, 0, 0]
+        if (cells[x + 1] == null) {
+            neighborsX = [0, 0, -1];
+        }
+        if (cells[x - 1] == null) {
+            neighborsX = [0, 0, 1];
+        }
+        let swap = "dirt"; //return dirt as failsafe
+
+        if (fromCombo) {
+            return "jack-o-lantern";
+        }
+        for (var i = 0; i < neighborsX.length; i++) {
+            console.log(i);
+            if (cells[x + neighborsX[i]][y + neighborsY[i]] != null && (Math.random() < 1/(neighborsX.length - i)) ) {
+                swap = cells[x + neighborsX[i]][y + neighborsY[i]];
+                cells[x + neighborsX[i]][y + neighborsY[i]] = weightedRandom(["jack-o-lantern", "pumpkin"], [5, 1]);
+                console.log("success");
+                break;
+            }
+        }
+        return swap;
+    }
     else if (type == "flower") {
         let rolls = 1 + Math.floor(Math.random() * 3);
         for (var i = 0; i < rolls; i++) {
@@ -251,7 +281,6 @@ var draw = function () {
     if (petalUses == 0) {
         petalType = "None"
     }
-    console.log(menuTab);
     if (menuTab == 0) {
         var statText = document.getElementById("InventoryText")
         var displayedCrops = cropNames.map((value, i) => value + ": " + cropCounts[i])
@@ -311,6 +340,9 @@ var draw = function () {
                 case "apple":
                     canvas.drawImage(spritesheet, 176, 0, 16, 16, (x) * unit, (y) * unit, unit, unit);
                     break;
+                case "jack-o-lantern":
+                    canvas.drawImage(spritesheet, 192, 0, 16, 16, (x) * unit, (y) * unit, unit, unit);
+                    break;
                 default:
                     // This shouldn't happen if the code works
                     console.log("code broken :(");
@@ -365,7 +397,7 @@ function handleButtonClick(buttonId) {
             if (cropCounts[0] >= 500 & cropCounts[1] >= 75) {
                 cropCounts[0] -= 500;
                 cropCounts[1] -= 75;
-                populate(["dirt", "grass", "moss", "grain", "wheat", "stone", "pumpkin"], [10, 25, 8, 7, 5, 3, 0.1]);
+                populate(["dirt", "grass", "moss", "grain", "wheat", "stone", "jack-o-lantern"], [10, 25, 8, 7, 5, 3, 0.2]);
             }
             break;
         case 'button5':
@@ -373,7 +405,7 @@ function handleButtonClick(buttonId) {
                 cropCounts[0] -= 500;
                 cropCounts[1] -= 100;
                 cropCounts[2] -= 2;
-                populate(["dirt", "grass", "moss", "wheat", "stone", "pumpkin", "tree","stump"], [10, 50, 20, 20, 10, 2, 6, 2]);
+                populate(["dirt", "grass", "moss", "wheat", "stone", "jack-o-lantern", "tree","stump"], [10, 50, 20, 20, 10, 2, 6, 2]);
             }
             break;
         case 'button6':
@@ -383,7 +415,7 @@ function handleButtonClick(buttonId) {
                 cropCounts[2] -= 5;
                 cropCounts[3] -= 500;
                 cropCounts[4] -= 500;
-                populate(["dirt", "moss", "wheat", "stone", "pumpkin", "tree", "stump", "apple tree"], [30, 15, 25, 10, 5, 10, 2, 2]);
+                populate(["dirt", "moss", "wheat", "stone", "jack-o-lantern", "tree", "stump", "apple tree"], [30, 15, 25, 10, 5, 10, 2, 2]);
             }
             break;
         // upgrade cases
@@ -437,6 +469,26 @@ function handleButtonClick(buttonId) {
             menuTab = 1;
             showTab("SaveMenu");
             draw();
+            break;
+        case 'Tools':
+            menuTab = 2;
+            showTab("ToolsMenu");
+            draw();
+            break;
+        case 'Seeds':
+            menuTab = 3;
+            showTab("SeedsMenu");
+            draw();
+            break;
+        //Buying Tools Cases
+        case 'PumpkinShovelBuy':
+            if (cropCounts[2] >= 4) {
+                cropCounts[2] -= 4;
+                ToolActive = "Pumpkin Shovel";
+                ToolDurability = 25;
+                ToolMaxDurability = 25;
+                draw();
+            }
             break;
         //Save Tab Cases
         case 'ImportButton':
