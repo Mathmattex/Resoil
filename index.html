@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <link rel="stylesheet"
@@ -32,6 +32,8 @@
             }
 
         #left-side {
+            height: 90vh;
+            align-items: flex-start;
             flex: 1;
             padding: 10px;
         }
@@ -51,20 +53,9 @@
             margin-top: 0px;
         }
 
-        #petalButton {
-            width: 100%;
-            margin: 5px;
-            padding: 10px;
-            height: 50px;
-            font-size: 20px;
-            background: url(PetalButton.png);
-            font-weight: bold;
-            color: white;
-            
-        }
-        #tabMenu{
+        #tabMenu {
             display: flex;
-            margin:3px;
+            margin: 3px;
             margin-bottom: 0px;
         }
         #ToolImage {
@@ -92,12 +83,6 @@
             background-size: 16px 16px;
             color:white;
         }
-        .upgrade-button {
-            background: url(UpgradeButton.png);
-            background-repeat: repeat;
-            background-size: 16px 16px;
-            color:white;
-        }
         .custom-button {
             min-width: 144px;
             width: auto;
@@ -118,7 +103,12 @@
             padding: 0px;
             image-rendering: pixelated;
             text-anchor: start;
+            border-width: medium;
         }
+            .toolButton.select {
+                border-color: lime;
+                
+            }
         .menu-button {
             min-width: 10px;
             font-size: 12px;
@@ -131,6 +121,7 @@
             display: block;
         }
         .tab {
+            
             display: none;
             font-size: 15px;
             letter-spacing: 2px;
@@ -148,16 +139,22 @@
     <title>Resoil</title>
 </head>
 <body>
-
+    <audio id="leafSound" src="leafSound.wav"></audio>
+    <audio id="leafSound2" src="leafSound2.wav"></audio>
+    <audio id="StoneSound" src="StoneSound.wav"></audio>
+    <audio id="BonkSound" src="BonkSound.wav"></audio>
+    <audio id="PickupSound" src="PickupSound.mp3"></audio>
+    <audio id="WoodcutSound" src="WoodcutSound.wav"></audio>
+    <audio id="SnipSound" src="SnipSound.wav"></audio>
     <div id="canvas-container">
         <div id="left-side">
             <div id="tabMenu">
                 <button class="custom-button menu-button" id="Inventory" onclick="handleButtonClick(this.id)">Inventory</button>
                 <button class="custom-button menu-button" id="Save" onclick="handleButtonClick(this.id)">Save</button>
+                <button class="custom-button menu-button" id="Tools" onclick="handleButtonClick(this.id)">Tools</button>
             </div>
             <div id="InventoryMenu" class="tab active">
                 <textarea rows="21" cols="20" class="statText" id="InventoryText" readonly></textarea>
-                <button class="custom-button" id="petalButton" onclick="handleButtonClick(this.id)">Activate Random Petal</button>
             </div>
             <div id="SaveMenu" class="tab">
                 Your save key:
@@ -167,7 +164,15 @@
                 <button class="custom-button" id="ImportButton" onclick="handleButtonClick(this.id)">Import</button>
                 <button class="custom-button" id="ClearButton" onclick="handleButtonClick(this.id)">Clear</button>
             </div>
-            
+            <div id="ToolsMenu" class="tab">
+                <button class="custom-button toolButton" id="ClippersButton" onclick="handleButtonClick(this.id)">
+                    <img class="toolIcon" src="LockIcon.png" />Clippers<br /> Unlock: 100 Grain <span class="description">50% chance to pick with double drops, otherwise do nothing</span>
+                </button>
+                <button class="custom-button toolButton" id="RakeButton" onclick="handleButtonClick(this.id)">
+                    <img class="toolIcon" src="LockIcon.png" />Rake<br /> Unlock: 10 Pumpkins <span class="description">Picks with 3x drops, but delete all crops around it when picking</span>
+                </button>
+            </div>
+
         </div>
         <div>
             <canvas id="canvas"></canvas>
@@ -182,12 +187,9 @@
             <button class="custom-button soil-button" id="button6" onclick="handleButtonClick(this.id)">Lvl 6: <br /> 700 weeds <br /> 150 Grain<br /> 5 pumpkins <br /> 500 wood<br /> 500 leaves</button>
         </div>
         <div class="button-container">
-            <button class="custom-button upgrade-button" id="upgrade1" onclick="handleButtonClick(this.id)">Fortune(0): <br /> 300 weeds <br /> 10 grain</button>
-            <button class="custom-button upgrade-button" id="upgrade2" onclick="handleButtonClick(this.id)">Combo(0): <br /> 75 grain <br /> 1 pumpkin</button>
-            <button class="custom-button upgrade-button" id="upgrade3" onclick="handleButtonClick(this.id)">Flower Spawn(0): <br /> 100 grain</button>
-            <button class="custom-button upgrade-button" id="upgrade4" onclick="handleButtonClick(this.id)">Rock Luck(0/5): <br /> 3 pumpkins</button>
         </div>
     </div>
+
     <script src="Resoil.js"></script>
 
 </body>

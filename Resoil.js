@@ -14,27 +14,32 @@ c.addEventListener('contextmenu', (event) => {
     event.preventDefault();
 });
 
+
+//Version Number
+const version = "0.1";
+
+
 var spritesheet = new Image();
 spritesheet.src = 'Resoil-Spritesheet.png';
 var menuTab = 0;
 var buttons = document.getElementsByClassName("custom-button");
 var statText = document.getElementById("statText");
-var IsNew = localStorage.getItem("IsNew");
+var IsNew = JSON.parse(localStorage.getItem("IsNew"));
+var readVersion = JSON.parse(localStorage.getItem("version"));
 var SaveKey = 0;
 var cropCounts = [0, 0, 0, 0, 0, 0, 0, 0]
-var petalCounts = [0, 0, 0, 0]
-var petalType = "None";
-var petalUses = 0;
-var fortune = 0;
-var combo = 0;
-var flowerChance = 0;
 var cells = []
 var rockTier = 0;
 var ToolActive = "None";
-var ToolDurability = -1;
-var ToolMaxDurability = -1;
-console.log(IsNew);
-if (IsNew == null) {
+var ToolUnlocks = [false,false]
+for (var x = 0; x < sideLen; x++) {
+    cells.push([]);
+    for (var y = 0; y < sideLen; y++) {
+        cells[x].push(0);
+    }
+
+}
+if (IsNew == null || readVersion != version) {
     spritesheet.onload = function () {
         populate(["dirt", "grass", "moss"], [15, 3, 0.075]);
     };
@@ -72,121 +77,54 @@ function exportSaveData() {
 }
 function load() {
     cropCounts = JSON.parse(localStorage.getItem("cropCounts"));
-    petalCounts = JSON.parse(localStorage.getItem("petalCounts"));
-    petalType = JSON.parse(localStorage.getItem("petalType"));
-    petalUses = JSON.parse(localStorage.getItem("petalUses"));
-    fortune = JSON.parse(localStorage.getItem("fortune"));
-    combo = JSON.parse(localStorage.getItem("combo"));
-    flowerChance = JSON.parse(localStorage.getItem("flowerChance"));
     cells = JSON.parse(localStorage.getItem("cells"));
-    rockTier = JSON.parse(localStorage.getItem("rockTier"));
     ToolActive = JSON.parse(localStorage.getItem("ToolActive"));
+    ToolUnlocks = JSON.parse(localStorage.getItem("ToolUnlocks"));
 }
 var save = function () {
-    console.log("saved!")
-    localStorage.setItem("IsNew", JSON.stringify(null));
+    localStorage.setItem("IsNew", JSON.stringify(false));
+    localStorage.setItem("version", JSON.stringify(version));
     localStorage.setItem("cropCounts", JSON.stringify(cropCounts));
-    localStorage.setItem("petalCounts", JSON.stringify(petalCounts));
-    localStorage.setItem("petalType", JSON.stringify(petalType));
-    localStorage.setItem("petalUses", JSON.stringify(petalUses));
-    localStorage.setItem("fortune", JSON.stringify(fortune));
-    localStorage.setItem("combo", JSON.stringify(combo));
-    localStorage.setItem("flowerChance", JSON.stringify(flowerChance));
     localStorage.setItem("cells", JSON.stringify(cells));
-    localStorage.setItem("rockTier", JSON.stringify(rockTier));
     localStorage.setItem("ToolActive", JSON.stringify(ToolActive));
+    localStorage.setItem("ToolUnlocks", JSON.stringify(ToolUnlocks));
 }
-const RockDropPools = [["moss", "wheat", "stone"], ["moss", "wheat", "stone"], ["moss", "wheat", "stone", "pumpkin"], ["moss", "wheat", "stone", "pumpkin"], ["moss", "wheat", "stone", "pumpkin", "apple"], ["moss", "wheat", "stone", "pumpkin", "apple"]];
-const RockDropWeights = [[4, 1, 1], [4, 4, 1], [4, 6, 1, 1], [2, 6, 0.5, 2.5], [2, 6, 0.5, 2.5, 1], [4, 4, 1, 4, 4]];
 const cropNames = ["Weeds", "Grain", "Pumpkins", "Wood", "Leaves", "Apples"];
-const petalNames = ["Picking", "Destructive", "Digging", "Flowering"]
-for (var x = 0; x < sideLen; x++) {
-    cells.push([]);
-    for (var y = 0; y < sideLen; y++) {
-        cells[x].push(0);
-    }
+const ToolNames = ["Clippers", "Rake"]
 
-}
-
-
-var pick = function (type, fromCombo, x, y) {
-    var willFlower = false;
-    if (!fromCombo & petalType == "Flowering" & type != "dirt") {
-        petalUses--;
-        if (Math.random() <= 0.1) {
-            willFlower = true;
-        }
-    }
-    let ExtraCombo = 0;
-    if (!fromCombo & petalType == "Destructive" && type != "dirt") {
-        petalUses--;
-        ExtraCombo += 5 + Math.floor(Math.random() * 11);
-    }
-    let fortuneMult = (Math.floor(fortune / 10)) + Math.floor(Math.random() + ((fortune / 10) % 1)) + 1;
-    if (!fromCombo & petalType == "Picking" & type != "dirt" & type != "stone") {
-        petalUses--;
-        fortuneMult += 3 + Math.floor(Math.random() * 4);
-    }
-    if (!fromCombo & type != "dirt") {
-        for (var i = 0; i < combo + ExtraCombo; i++) {
-            if (Math.random() < 0.5) {
-                let cellX = Math.floor(Math.random() * 10);
-                let cellY = Math.floor(Math.random() * 10);
-                cells[cellX][cellY] = pick(cells[cellX][cellY], true, cellX, cellY);
-            }
-        }
-    }
-    if (type != "dirt" & type != "flower") {
-        for (var i = 0; i < flowerChance + 1; i++) {
-            if (Math.random() < 0.0005) {
-                willFlower = true;
-            }
-        }
-    }
-
+var pick = function (type, x, y, ExtraMult) {
+    var fortuneMult = ExtraMult + 1;
     if (type == "grass") {
+        playsound(weightedRandom([leafSound2, leafSound],[1, 1]),0.7,Math.random() * 0.5 + 1, 0.1);
         cropCounts[0] += (Math.floor(Math.random() * 3) * fortuneMult + Math.floor(Math.random() * 3) + 2) * fortuneMult;
-        if (willFlower) {
-            return "flower";
-        }
         return "dirt";
     }
     else if (type == "moss") {
+        playsound(weightedRandom([leafSound2,leafSound],[1,1]), 0.7, Math.random() * 0.5 + 1, 0.1);
         cropCounts[0] += 5 + Math.floor(Math.random() * 6) * fortuneMult + Math.floor(Math.random() * 6) * fortuneMult;
-        if (willFlower) {
-            return "flower";
-        }
         return weightedRandom(["dirt", "grass"], [4, 1]);
     }
     else if (type == "grain") {
+        playsound(weightedRandom([leafSound2, leafSound], [1, 1]), 0.7, Math.random() * 0.5 + 1, 0.1);
         cropCounts[1] += 1 + Math.floor(Math.random() * 2) * fortuneMult + Math.floor(Math.random() * 2) * fortuneMult;
-        if (willFlower) {
-            return "flower";
-        }
         return weightedRandom(["dirt", "grass"], [9, 1]);
     }
     else if (type == "wheat") {
+        playsound(weightedRandom([leafSound2, leafSound], [1, 1]), 0.7, Math.random() * 0.5 + 1, 0.1);
         cropCounts[1] += 3 + Math.floor(Math.random() * 5) * fortuneMult + Math.floor(Math.random() * 5) * fortuneMult;
-        if (willFlower) {
-            return "flower";
-        }
         return "dirt";
     }
     else if (type == "stone") {
-        if (willFlower) {
-            return "flower";
-        }
+        playsound(StoneSound, 1, Math.random() * 0.3 + 0.5, 0.1);
         return weightedRandom(["moss", "wheat", "stone"], [4, 1, 1]);
     }
     else if (type == "pumpkin") {
+        playsound(PickupSound, 0.7, Math.random() * 0.2 + 1.5, 0);
         cropCounts[2] += 1 * fortuneMult;
-        if (willFlower) {
-            return "flower";
-        }
-        
         return "dirt";
     }
     else if (type == "jack-o-lantern") {
+        playsound(StoneSound, 1, Math.random() * 0.3 + 3, 0.1);
         let neighborsX = [0, 0, -1, 1]
         let neighborsY = [1, -1, 0, 0]
         if (cells[x + 1] == null) {
@@ -197,9 +135,6 @@ var pick = function (type, fromCombo, x, y) {
         }
         let swap = "dirt"; //return dirt as failsafe
 
-        if (fromCombo) {
-            return "jack-o-lantern";
-        }
         for (var i = 0; i < neighborsX.length; i++) {
             console.log(i);
             if (cells[x + neighborsX[i]][y + neighborsY[i]] != null && (Math.random() < 1/(neighborsX.length - i)) ) {
@@ -211,27 +146,20 @@ var pick = function (type, fromCombo, x, y) {
         }
         return swap;
     }
-    else if (type == "flower") {
-        let rolls = 1 + Math.floor(Math.random() * 3);
-        for (var i = 0; i < rolls; i++) {
-            petalCounts[Math.floor(Math.random() * 4)] += 1;
-        }
-        return "dirt";
-    }
     else if (type == "stump") {
+        playsound(PickupSound, 0.7, Math.random() * 0.2 + 1.5, 0);
         cropCounts[3] += 1 + Math.floor(Math.random() * 5) * fortuneMult;
         cropCounts[4] += Math.floor(Math.random() * 2) * fortuneMult;
-        if (willFlower) {
-            return "flower";
-        }
         return "dirt";
     }
     else if (type == "tree") {
+        playsound(WoodcutSound, 1, Math.random() * 0.5 + 0.7, 0);
         cropCounts[3] += 1 + Math.floor(Math.random() * 2) * fortuneMult + Math.floor(Math.random() * 3) * fortuneMult;
         cropCounts[4] += 1 + Math.floor(Math.random() * 3) * fortuneMult;
         return weightedRandom(["stump", "tree"], [1, 10]);
     }
-    else if (type == "apple tree" && !fromCombo) {
+    else if (type == "apple tree") {
+        playsound(PickupSound, 0.7, Math.random() * 0.2 + 1.5, 0);
         cropCounts[3] += 1 + Math.floor(Math.random() * 2) * fortuneMult + Math.floor(Math.random() * 3) * fortuneMult;
         cropCounts[4] += 1 + Math.floor(Math.random() * 3) * fortuneMult;
         let neighborsX = [0, 0, -1, 1]
@@ -251,16 +179,10 @@ var pick = function (type, fromCombo, x, y) {
         return "tree";
     }
     else if (type == "apple") {
+        playsound(PickupSound, 0.7, Math.random() * 0.2 + 1.5, 0);
         cropCounts[5] += 1 * fortuneMult;
-        if (willFlower) {
-            return "flower";
-        }
 
         return "dirt";
-    }
-    else if (!fromCombo & type == "dirt" & petalType == "Digging") {
-        petalUses--;
-        return "stone";
     }
     else {
         return type;
@@ -273,31 +195,69 @@ var OnClick = function (event) {
     const squareX = Math.floor(mouseX / unit);
     const squareY = Math.floor(mouseY / unit);
 
-    cells[squareX][squareY] = pick(cells[squareX][squareY], false, squareX, squareY);
+    cells[squareX][squareY] = pick(cells[squareX][squareY], squareX, squareY, 0);
     
     draw();
 }
-var draw = function () {
-    if (petalUses == 0) {
-        petalType = "None"
+var OnRightClick = function (event) {
+    const mouseX = event.clientX - c.getBoundingClientRect().left;
+    const mouseY = event.clientY - c.getBoundingClientRect().top;
+
+    const squareX = Math.floor(mouseX / unit);
+    const squareY = Math.floor(mouseY / unit);
+
+    if (ToolActive == "Clippers") {
+        if (Math.random() <= 0.5) {
+            cells[squareX][squareY] = pick(cells[squareX][squareY], squareX, squareY, 1);
+        }
+        else {
+            playsound(SnipSound, 0.7, Math.random() * 0.2 + 1.5, 0);
+        }
     }
+    else if (ToolActive == "Rake") {
+        cells[squareX][squareY] = pick(cells[squareX][squareY], squareX, squareY, 2);
+        playsound(StoneSound, 0.7, 0.6, 0.1);
+        var neighborsX = [-1, -1, -1, 0, 0, 1, 1, 1]
+        var neighborsY = [-1, 0, 1, -1, 1, -1, 0, 1]
+        for (var i = 0; i < neighborsX.length; i++) {
+            try {
+                cells[squareX + neighborsX[i]][squareY + neighborsY[i]] = "dirt";
+            }
+            catch {
+                
+            }
+        }
+        
+    }
+    draw();
+}
+var draw = function () {
     if (menuTab == 0) {
         var statText = document.getElementById("InventoryText")
         var displayedCrops = cropNames.map((value, i) => value + ": " + cropCounts[i])
         displayedCrops = displayedCrops.filter((_, i) => cropCounts[i] !== 0);
-        var displayedPetals = petalNames.map((value, i) => value + " Petals: " + petalCounts[i])
-        displayedPetals = displayedPetals.filter((_, i) => petalCounts[i] !== 0);
-        statText.setHTML(displayedCrops.join("\n") + `\n\nPetal Active: ${petalType}\nUses Left: ${petalUses}/15\nYour Petals:\n` + displayedPetals.join("\n"));
+        statText.setHTML(displayedCrops.join("\n"));
     }
     else if (menuTab == 1) {
         var saveKey = exportSaveData();
         var SaveExport = document.getElementById("SaveExport")
         SaveExport.setHTML(saveKey);
     }
-    document.getElementById("upgrade2").setHTML(`Combo(${combo}): <br /> ${75 + combo * 50} grain <br /> ${1 + Math.floor(combo * 0.5)} pumpkin`);
-    document.getElementById("upgrade1").setHTML(`Fortune(${fortune}): <br /> ${300 + fortune * 100} weeds <br /> ${10 + fortune * 10} Grain`);
-    document.getElementById("upgrade3").setHTML(`Flower Spawn(${flowerChance}): <br /> ${100 + flowerChance * 75} Grain`);
-    document.getElementById("upgrade4").setHTML(`Rock Luck(${rockTier}/5): <br /> ${3 + rockTier * 3} pumpkins`)
+    else if (menuTab == 2) {
+        for (var i = 0; i < ToolNames.length; i++) {
+            if (ToolUnlocks[i]) {
+                document.getElementById(ToolNames[i] + "Button").getElementsByTagName("img")[0].src = ToolNames[i] + ".png";
+            }
+            else {
+                document.getElementById(ToolNames[i] + "Button").getElementsByTagName("img")[0].src = "LockIcon.png";
+            }
+            document.getElementById(ToolNames[i] + "Button").classList.remove("select");
+        }
+        if (ToolActive != "None") {
+            document.getElementById(ToolActive + "Button").classList.add("select");
+        }
+        
+    }
     canvas.fillStyle = "black"
     canvas.fillRect(0, 0, c.width, c.height)
     canvas.strokeStyle = "black";
@@ -418,47 +378,7 @@ function handleButtonClick(buttonId) {
                 populate(["dirt", "moss", "wheat", "stone", "jack-o-lantern", "tree", "stump", "apple tree"], [30, 15, 25, 10, 5, 10, 2, 2]);
             }
             break;
-        // upgrade cases
-        case 'upgrade1':
-            if (cropCounts[0] >= 300 + fortune * 100 & cropCounts[1] >= 10 + fortune * 10) {
-                cropCounts[0] -= 300 + fortune * 100;
-                cropCounts[1] -= 10 + fortune * 10;
-                fortune++;
-                draw();
-                
-            }
-            break;
-        case 'upgrade2':
-            if (cropCounts[1] >= 75 + combo * 50 & cropCounts[2] >= 1 + Math.floor(combo * 0.5)) {
-                cropCounts[1] -= 75 + combo * 50;
-                cropCounts[2] -= 1 + Math.floor(combo * 0.5);
-                combo++;
-                draw();
-                
-            }
-            break;
-        case 'upgrade3':
-            if (cropCounts[1] >= 100 + flowerChance * 75) {
-                cropCounts[1] -= 100 + flowerChance * 75;
-                flowerChance++;
-                draw();
-            }
-            break;
-        case 'upgrade4':
-            if (cropCounts[2] >= 3 + rockTier * 3 && rockTier <= 5) {
-                cropCounts[2] -= 3 + rockTier * 3;
-                rockTier++;
-                draw();
-            }
-            break;
-        case 'petalButton':
-            if (petalCounts.reduce((accumulator, currentValue) => accumulator + currentValue, 0) > 0) {
-                petalUses = 15;
-                petalType = weightedRandom(petalNames, petalCounts);
-                petalCounts[petalNames.findIndex((element) => element === petalType)] -= 1;
-                draw();
-            }
-            break;
+        
         //Menu Cases
         case 'Inventory': 
             menuTab = 0;
@@ -475,20 +395,18 @@ function handleButtonClick(buttonId) {
             showTab("ToolsMenu");
             draw();
             break;
-        case 'Seeds':
-            menuTab = 3;
-            showTab("SeedsMenu");
+        //Tools Cases
+        case 'ClippersButton':
+            if (handleTool("Clippers", 0, cropCounts[1] >= 100)) {
+                cropCounts[1] -= 100;
+            }
             draw();
             break;
-        //Buying Tools Cases
-        case 'PumpkinShovelBuy':
-            if (cropCounts[2] >= 4) {
-                cropCounts[2] -= 4;
-                ToolActive = "Pumpkin Shovel";
-                ToolDurability = 25;
-                ToolMaxDurability = 25;
-                draw();
+        case 'RakeButton':
+            if (handleTool("Rake", 1, cropCounts[2] >= 15)) {
+                cropCounts[2] -= 15;
             }
+            draw();
             break;
         //Save Tab Cases
         case 'ImportButton':
@@ -506,6 +424,8 @@ function handleButtonClick(buttonId) {
                         localStorage.setItem(key, saveData[key]);
                     }
                 }
+                location.reload();
+                break;
             }
             catch (error) {
                 alert("Enter a valid save code!")
@@ -529,6 +449,24 @@ function handleButtonClick(buttonId) {
             break;
     }
 }
+var handleTool = function (name, id, costCondition) {
+    if (ToolUnlocks[id]) {
+        if (ToolActive == name) {
+            ToolActive = "None";
+        }
+        else {
+            ToolActive = name;
+        }
+    }
+    else if (!ToolUnlocks[id]) {
+        if (costCondition) {
+            ToolUnlocks[id] = true;
+            ToolActive = name;
+            return true;
+        }
+    }
+    return false
+}
 var populate = function (pool, weights) {
     cells = [];
     for (var x = 0; x < sideLen; x++) {
@@ -541,5 +479,12 @@ var populate = function (pool, weights) {
     draw();
 }
 
+var playsound = function (sound, volume, pitch, startTime) {
+    sound.currentTime = startTime;
+    sound.playbackRate = pitch;
+    sound.volume = volume;
+    sound.play();
+}
 
 c.onclick = function (event) { OnClick(event); }
+c.oncontextmenu = function (event) { OnRightClick(event); }
