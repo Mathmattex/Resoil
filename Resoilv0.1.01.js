@@ -14,10 +14,8 @@ c.addEventListener('contextmenu', (event) => {
     event.preventDefault();
 });
 
-//
 //Version Number
 const version = "0.1";
-
 
 var spritesheet = new Image();
 spritesheet.src = 'Resoil-Spritesheetv0.1.png';
@@ -403,8 +401,8 @@ function handleButtonClick(buttonId) {
             draw();
             break;
         case 'RakeButton':
-            if (handleTool("Rake", 1, cropCounts[2] >= 15)) {
-                cropCounts[2] -= 15;
+            if (handleTool("Rake", 1, cropCounts[2] >= 10)) {
+                cropCounts[2] -= 10;
             }
             draw();
             break;
